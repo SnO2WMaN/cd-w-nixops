@@ -50,22 +50,29 @@
       nixopsConfigurations = {
         default = import ./nixops {inherit nixpkgs;};
       };
-      herculesCI = {...}: {
-        onPush.default = {
-          outputs.effects = let
-            pkgs = import nixpkgs {
-              system = "x86_64-linux";
-              overlays = [
-                hercules-ci-effects.overlay
-                (final: prev: nixops-plugged.packages."x86_64-linux")
-              ];
-            };
-          in {
-            nixops = pkgs.effects.runNixOps2 {
-              flake = self;
-            };
-          };
+
+      # Hercules CI
+      ciNix = args @ {src, ...}:
+        flake-compat-ci.lib.recurseIntoFlakeWith {
+          flake = self;
+          systems = ["x86_64-linux"];
+          effectsArgs = args;
         };
+      effects = let
+        pkgs = import nixpkgs rec {
+          system = "x86_64-linux";
+          overlays = [
+            hercules-ci-effects.overlay
+            (final: prev: nixops-plugged.packages."${system}")
+          ];
+        };
+      in {
+        deploy = with pkgs; (
+          effects.runIf (src.ref == "refs/heads/main")
+          (effects.runNixOps2 {
+            flake = self;
+          })
+        );
       };
     };
 }
