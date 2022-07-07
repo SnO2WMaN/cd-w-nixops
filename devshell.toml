@@ -3,6 +3,7 @@ packages = [
   "alejandra",
   "dprint",
   "nixops-plugged",
+  "hci",
 ]
 
 [[commands]]

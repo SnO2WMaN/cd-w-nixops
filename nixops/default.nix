@@ -5,7 +5,9 @@ in {
 
   network = {
     description = "aws-test";
-    storage.legacy = {};
+
+    storage.hercules-ci.stateName = "nixops-default.json";
+    lock.hercules-ci.stateName = "nixops-default.json";
   };
 
   defaults = {...}: {
