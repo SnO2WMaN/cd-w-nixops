@@ -3,6 +3,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     devshell.url = "github:numtide/devshell";
     flake-utils.url = "github:numtide/flake-utils";
+    nixops-plugged.url = "github:lukebfox/nixops-plugged";
 
     flake-compat = {
       url = "github:edolstra/flake-compat";
@@ -15,6 +16,7 @@
     nixpkgs,
     flake-utils,
     devshell,
+    nixops-plugged,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -23,6 +25,7 @@
           inherit system;
           overlays = [
             devshell.overlay
+            (final: prev: nixops-plugged.packages."${system}")
           ];
         };
       in {
@@ -32,5 +35,10 @@
           ];
         };
       }
-    );
+    )
+    // {
+      nixopsConfigurations = {
+        default = import ./nixops {inherit nixpkgs;};
+      };
+    };
 }
